@@ -1,0 +1,95 @@
+.App {
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #1e293b;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar a {
+  color: #e2e8f0;
+  text-decoration: none;
+  margin: 0 1rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar a:hover {
+  color: #38bdf8;
+}
+
+/* Buttons */
+button {
+  background-color: #38bdf8;
+  color: #0f172a;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #0ea5e9;
+}
+
+/* Forms */
+form {
+  background-color: #1e293b;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: none;
+  background-color: #334155;
+  color: #f1f5f9;
+}
+
+input::placeholder {
+  color: #94a3b8;
+}
+
+/* Headings */
+h1,
+h2,
+h3 {
+  color: #f8fafc;
+}
+
+/* Cards */
+.card {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
