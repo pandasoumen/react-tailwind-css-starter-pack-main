@@ -154,7 +154,7 @@ export default function Navbar() {
     return () => {
       mounted = false;
     };
-  }, [dispatch, token]);
+  }, [dispatch, effectiveToken]);
 
   useEffect(() => {
     let mounted = true;
