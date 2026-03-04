@@ -34,7 +34,10 @@ export default function Appointments() {
   const authState = useSelector((state) => state.auth) || {};
   const role = authState.user?.role || "patient";
   const appointmentsState = useSelector((state) => state.appointments) || {};
-  const appointments = Array.isArray(appointmentsState.appointments) ? appointmentsState.appointments : [];
+  const appointments = useMemo(
+    () => (Array.isArray(appointmentsState.appointments) ? appointmentsState.appointments : []),
+    [appointmentsState.appointments]
+  );
 
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedType, setSelectedType] = useState("");

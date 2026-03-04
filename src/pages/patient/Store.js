@@ -47,8 +47,14 @@ export default function Store() {
   const location = useLocation();
   const navigate = useNavigate();
   const productsState = useSelector((state) => state.products) || {};
-  const products = Array.isArray(productsState.products) ? productsState.products : [];
-  const cart = Array.isArray(productsState.cart) ? productsState.cart : [];
+  const products = React.useMemo(
+    () => (Array.isArray(productsState.products) ? productsState.products : []),
+    [productsState.products]
+  );
+  const cart = React.useMemo(
+    () => (Array.isArray(productsState.cart) ? productsState.cart : []),
+    [productsState.cart]
+  );
   const isLoading = Boolean(productsState.isLoading);
 
   const [wishlist, setWishlist] = React.useState([]);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { API } from "../../utils/api";
 import { buildFlagUrl } from "../../utils/locationData";
@@ -44,13 +44,36 @@ const initialOverview = {
 };
 
 export default function PatientProfile() {
-  const authUser = useSelector((state) => state.auth?.user) || {};
+  const authUserState = useSelector((state) => state.auth?.user);
+  const authUser = useMemo(() => authUserState || {}, [authUserState]);
   const authToken = useSelector((state) => state.auth?.token) || localStorage.getItem("token");
   const [overview, setOverview] = useState(initialOverview);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [overviewError, setOverviewError] = useState("");
   const [historyError, setHistoryError] = useState("");
+
+  const authFallbackOverview = useMemo(() => {
+    const profile = authUser?.profile || {};
+    return {
+      name: authUser?.name || "",
+      email: authUser?.email || "",
+      role: authUser?.role || "patient",
+      sex: authUser?.sex || profile?.sex || "",
+      nationality: authUser?.nationality || profile?.nationality || "",
+      profileImage: authUser?.profileImage || "",
+      countryFlag: authUser?.countryFlag || profile?.countryFlag || "",
+      countryCode: authUser?.countryCode || profile?.countryCode || "",
+      phoneCountryCode: profile?.phoneCountryCode || "",
+      phone: profile?.phone || "",
+      address: profile?.address || "",
+      bloodGroup: profile?.bloodGroup || "",
+      medicalConditions: Array.isArray(profile?.medicalConditions)
+        ? profile.medicalConditions.join(", ")
+        : "",
+      status: authUser?.isActive === false ? "Inactive" : "Active",
+    };
+  }, [authUser]);
 
   useEffect(() => {
     const load = async () => {
@@ -80,80 +103,41 @@ export default function PatientProfile() {
           const profile = user?.profile || {};
 
           setOverview({
-            name: user?.name || authUser?.name || "",
-            email: user?.email || authUser?.email || "",
-            role: user?.role || authUser?.role || "patient",
-            sex: user?.sex || profile?.sex || authUser?.sex || authUser?.profile?.sex || "",
+            name: user?.name || authFallbackOverview.name,
+            email: user?.email || authFallbackOverview.email,
+            role: user?.role || authFallbackOverview.role,
+            sex: user?.sex || profile?.sex || authFallbackOverview.sex,
             nationality:
               user?.nationality ||
               profile?.nationality ||
-              authUser?.nationality ||
-              authUser?.profile?.nationality ||
+              authFallbackOverview.nationality ||
               "",
-            profileImage: user?.profileImage || authUser?.profileImage || "",
+            profileImage: user?.profileImage || authFallbackOverview.profileImage,
             countryFlag:
               user?.countryFlag ||
               profile?.countryFlag ||
-              authUser?.countryFlag ||
-              authUser?.profile?.countryFlag ||
+              authFallbackOverview.countryFlag ||
               "",
             countryCode:
               user?.countryCode ||
               profile?.countryCode ||
-              authUser?.countryCode ||
-              authUser?.profile?.countryCode ||
+              authFallbackOverview.countryCode ||
               "",
-            phoneCountryCode: profile?.phoneCountryCode || authUser?.profile?.phoneCountryCode || "",
-            phone: profile?.phone || authUser?.profile?.phone || "",
-            address: profile?.address || authUser?.profile?.address || "",
-            bloodGroup: profile?.bloodGroup || authUser?.profile?.bloodGroup || "",
+            phoneCountryCode: profile?.phoneCountryCode || authFallbackOverview.phoneCountryCode,
+            phone: profile?.phone || authFallbackOverview.phone,
+            address: profile?.address || authFallbackOverview.address,
+            bloodGroup: profile?.bloodGroup || authFallbackOverview.bloodGroup,
             medicalConditions: Array.isArray(profile?.medicalConditions)
               ? profile.medicalConditions.join(", ")
-              : Array.isArray(authUser?.profile?.medicalConditions)
-                ? authUser.profile.medicalConditions.join(", ")
-                : "",
+              : authFallbackOverview.medicalConditions,
             status: user?.isActive === false ? "Inactive" : "Active",
           });
         } else {
-          setOverview({
-            name: authUser?.name || "",
-            email: authUser?.email || "",
-            role: authUser?.role || "patient",
-            sex: authUser?.sex || authUser?.profile?.sex || "",
-            nationality: authUser?.nationality || authUser?.profile?.nationality || "",
-            profileImage: authUser?.profileImage || "",
-            countryFlag: authUser?.countryFlag || authUser?.profile?.countryFlag || "",
-            countryCode: authUser?.countryCode || authUser?.profile?.countryCode || "",
-            phoneCountryCode: authUser?.profile?.phoneCountryCode || "",
-            phone: authUser?.profile?.phone || "",
-            address: authUser?.profile?.address || "",
-            bloodGroup: authUser?.profile?.bloodGroup || "",
-            medicalConditions: Array.isArray(authUser?.profile?.medicalConditions)
-              ? authUser.profile.medicalConditions.join(", ")
-              : "",
-            status: authUser?.isActive === false ? "Inactive" : "Active",
-          });
+          setOverview(authFallbackOverview);
           setOverviewError("Live profile data could not be loaded. Showing saved account data.");
         }
       } catch {
-        setOverview({
-          name: authUser?.name || "",
-          email: authUser?.email || "",
-          role: authUser?.role || "patient",
-          sex: authUser?.sex || authUser?.profile?.sex || "",
-          nationality: authUser?.nationality || authUser?.profile?.nationality || "",
-          profileImage: authUser?.profileImage || "",
-          countryFlag: authUser?.countryFlag || authUser?.profile?.countryFlag || "",
-          countryCode: authUser?.countryCode || authUser?.profile?.countryCode || "",
-          phoneCountryCode: authUser?.profile?.phoneCountryCode || "",
-          phone: authUser?.profile?.phone || "",
-          address: authUser?.profile?.address || "",
-          bloodGroup: authUser?.profile?.bloodGroup || "",
-          medicalConditions: Array.isArray(authUser?.profile?.medicalConditions)
-            ? authUser.profile.medicalConditions.join(", ")
-            : "",
-          status: authUser?.isActive === false ? "Inactive" : "Active",
-        });
+        setOverview(authFallbackOverview);
         setOverviewError("Live profile data could not be loaded. Showing saved account data.");
       }
 
@@ -169,7 +153,7 @@ export default function PatientProfile() {
     };
 
     load();
-  }, [authToken, authUser?.email, authUser?.name, authUser?.role]);
+  }, [authToken, authFallbackOverview]);
 
   const rowClass = "flex items-center justify-between border-b border-slate-200 pb-2";
 

@@ -42,7 +42,8 @@ const toNumberOrDash = (value, unit = "") => {
 };
 
 export default function PatientDashboard() {
-  const authUser = useSelector((state) => state.auth?.user) || {};
+  const authUserState = useSelector((state) => state.auth?.user);
+  const authUser = useMemo(() => authUserState || {}, [authUserState]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [patient, setPatient] = useState({});
