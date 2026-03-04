@@ -24,10 +24,19 @@ import {
 import AnimatedLogo from "./AnimatedLogo";
 
 export default function Navbar() {
-  const { user, token } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth || {});
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const effectiveToken = token || localStorage.getItem("token");
+  const normalizedRole = String(
+    user?.role || user?.accountType || user?.userType || ""
+  )
+    .trim()
+    .toLowerCase();
+  const isAuthenticated = Boolean(
+    effectiveToken && user && typeof user === "object" && Object.keys(user).length > 0
+  );
 
   const [search, setSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -42,11 +51,11 @@ export default function Navbar() {
   const typedHeal = typedBrand.slice(0, 4);
   const typedTron = typedBrand.slice(4);
   const isHighlightedUser =
-    user?.role === "doctor" || (user?.role === "patient" && isDonor);
+    normalizedRole === "doctor" || (normalizedRole === "patient" && isDonor);
   const isStoreSection =
     location.pathname === "/patient/store" || location.pathname === "/doctor/store";
-  const diagnosisPath = user?.role === "doctor" ? "/doctor/prescriptions" : "/patient/upload-prescription";
-  const storePath = user?.role === "doctor" ? "/doctor/store" : "/patient/store";
+  const diagnosisPath = normalizedRole === "doctor" ? "/doctor/prescriptions" : "/patient/upload-prescription";
+  const storePath = normalizedRole === "doctor" ? "/doctor/store" : "/patient/store";
   const navLinkClass = (isActive) =>
     `inline-flex h-12 items-center gap-2 border-b-2 px-1 text-base leading-none transition-transform duration-150 ${
       isActive
@@ -115,7 +124,6 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
-    const effectiveToken = token || localStorage.getItem("token");
 
     const hydrateAuthUser = async () => {
       if (!effectiveToken) return;
@@ -150,12 +158,11 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
-    const effectiveToken = token || localStorage.getItem("token");
     const userId = user?.id || user?._id || "";
     const donorCacheKey = userId ? `donor:${userId}` : "";
 
     const checkDonorStatus = async () => {
-      if (!user || user.role !== "patient") {
+      if (!user || normalizedRole !== "patient") {
         if (mounted) setIsDonor(false);
         return;
       }
@@ -195,7 +202,7 @@ export default function Navbar() {
       mounted = false;
       window.removeEventListener("donor-status-changed", refreshDonorStatus);
     };
-  }, [user, token, location.pathname]);
+  }, [user, normalizedRole, effectiveToken, location.pathname]);
 
   return (
     <nav className="bg-[#0c3b8c] text-white sticky top-0 z-50 shadow-lg h-20">
@@ -236,7 +243,7 @@ export default function Navbar() {
                   <span>Blog</span>
                 </Link>
 
-                {user?.role === "doctor" && (
+                {normalizedRole === "doctor" && (
                   <>
                     <Link to="/doctor/dashboard" className={navLinkClass(isPathActive("/doctor/dashboard"))}>
                       <FiGrid />
@@ -257,7 +264,7 @@ export default function Navbar() {
                   </>
                 )}
 
-                {user?.role === "patient" && (
+                {normalizedRole === "patient" && (
                   <>
                     {location.pathname !== "/patient/dashboard" && (
                       <>
@@ -377,7 +384,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {!user && (
+            {!isAuthenticated && (
               <>
                 <Link
                   to="/login"
@@ -395,7 +402,7 @@ export default function Navbar() {
               </>
             )}
 
-            {user && (
+            {isAuthenticated && (
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -422,9 +429,9 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-3 w-44 bg-white text-black shadow-xl rounded-lg border border-gray-200 p-2">
                     <Link
                       to={
-                        user.role === "doctor"
+                        normalizedRole === "doctor"
                           ? "/doctor/profile"
-                          : user.role === "patient"
+                          : normalizedRole === "patient"
                             ? "/patient/profile"
                             : "/"
                       }
@@ -435,7 +442,7 @@ export default function Navbar() {
                       {(user?.name || "Profile").toUpperCase()}
                     </Link>
 
-                    {user.role === "patient" && (
+                    {normalizedRole === "patient" && (
                       <Link
                         to={isDonor ? "/patient/donor-dashboard" : "/patient/blood"}
                         className="flex w-full items-center gap-2 py-2 hover:text-blue-600 transition"
@@ -447,7 +454,7 @@ export default function Navbar() {
                     )}
 
                     <Link
-                      to={user.role === "doctor" ? "/doctor/dashboard" : "/patient/dashboard"}
+                      to={normalizedRole === "doctor" ? "/doctor/dashboard" : "/patient/dashboard"}
                       className="flex w-full items-center gap-2 py-2 hover:text-blue-600 transition"
                       onClick={() => setDropdownOpen(false)}
                     >
@@ -456,7 +463,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      to={user.role === "doctor" ? "/doctor/appointments" : "/patient/appointments"}
+                      to={normalizedRole === "doctor" ? "/doctor/appointments" : "/patient/appointments"}
                       className="flex w-full items-center gap-2 py-2 hover:text-blue-600 transition"
                       onClick={() => setDropdownOpen(false)}
                     >
@@ -466,9 +473,9 @@ export default function Navbar() {
 
                     <Link
                       to={
-                        user.role === "doctor"
+                        normalizedRole === "doctor"
                           ? "/doctor/profile-settings"
-                          : user.role === "patient"
+                          : normalizedRole === "patient"
                             ? "/patient/profile-settings"
                             : "/"
                       }
