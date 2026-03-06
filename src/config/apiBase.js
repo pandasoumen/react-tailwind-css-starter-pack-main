@@ -10,14 +10,19 @@ const fromEnv = () => {
 const fromWindow = () => {
   if (typeof window === "undefined" || !window.location) return null;
 
-  const { origin, hostname } = window.location;
+  const { hostname } = window.location;
   const isLocal =
     hostname === "localhost" ||
     hostname === "127.0.0.1" ||
     hostname === "::1";
 
   if (isLocal) return "http://localhost:4000/api";
-  return `${origin}/api`;
+  return null;
 };
 
-export const API_BASE_URL = fromEnv() || fromWindow() || "http://localhost:4000/api";
+export const API_BASE_URL = fromEnv() || fromWindow() || null;
+
+export const API_BASE_CONFIG_ERROR =
+  "API base URL is not configured. Set REACT_APP_API_URL to your backend URL (for example: https://your-backend-domain/api).";
+
+export const isApiBaseConfigured = () => Boolean(API_BASE_URL);

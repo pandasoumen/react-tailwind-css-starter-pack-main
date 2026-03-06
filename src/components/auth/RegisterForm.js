@@ -5,7 +5,11 @@ import SuccessAnimation from "../SuccessAnimation";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../store/slices/authSlice";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../../config/apiBase";
+import {
+  API_BASE_URL,
+  API_BASE_CONFIG_ERROR,
+  isApiBaseConfigured,
+} from "../../config/apiBase";
 
 const RegisterForm = () => {
   const dispatch = useDispatch();
@@ -39,6 +43,10 @@ const RegisterForm = () => {
     try {
       setLoading(true);
       setError(null);
+      if (!isApiBaseConfigured()) {
+        setError(API_BASE_CONFIG_ERROR);
+        return;
+      }
 
       await axios.post(
         `${API_BASE_URL}/otp/send`,
@@ -60,6 +68,10 @@ const RegisterForm = () => {
     try {
       setLoading(true);
       setError(null);
+      if (!isApiBaseConfigured()) {
+        setError(API_BASE_CONFIG_ERROR);
+        return;
+      }
 
       console.log("Verify Payload:", { ...form, otp });
 
