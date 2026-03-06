@@ -20,15 +20,21 @@ const generateToken = (id) =>
 const createTransporter = () => {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
+  const smtpPort = Number(process.env.SMTP_PORT) || 587;
+  const smtpSecure =
+    String(process.env.SMTP_SECURE || "").toLowerCase() === "true" ||
+    smtpPort === 465;
 
   if (!smtpUser || !smtpPass) {
-    throw new Error("SMTP credentials are missing. Set SMTP_USER and SMTP_PASS in backend/.env");
+    throw new Error(
+      "SMTP credentials are missing. Set SMTP_USER and SMTP_PASS in server environment."
+    );
   }
 
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
+    port: smtpPort,
+    secure: smtpSecure,
     auth: {
       user: smtpUser,
       pass: smtpPass,
@@ -104,9 +110,19 @@ export const sendOTP = async (req, res) => {
     });
   } catch (error) {
     console.error("OTP Error:", error);
+    const rawMessage = String(error?.message || "");
+    const lower = rawMessage.toLowerCase();
+
+    const message =
+      lower.includes("credentials") || lower.includes("auth")
+        ? "OTP email service is not configured correctly on server."
+        : lower.includes("econnrefused") || lower.includes("enotfound")
+        ? "OTP email service host is unreachable from server."
+        : "Failed to send OTP";
+
     res.status(500).json({
       success: false,
-      message: "Failed to send OTP",
+      message,
     });
   }
 };

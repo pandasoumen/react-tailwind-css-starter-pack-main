@@ -12,8 +12,40 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 
 const app = express();
 
+const parseAllowedOrigins = () => {
+  const raw = [
+    process.env.CLIENT_URLS,
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL,
+  ]
+    .filter(Boolean)
+    .join(",");
+
+  return raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
+const corsOptions = {
+  credentials: true,
+  origin(origin, callback) {
+    // Allow server-to-server tools and same-origin requests without Origin header.
+    if (!origin) return callback(null, true);
+
+    // If no origin config is provided, avoid blocking all requests in production by mistake.
+    if (allowedOrigins.length === 0) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+};
+
 app.use(express.json());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

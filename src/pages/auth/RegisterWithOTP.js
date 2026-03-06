@@ -4,6 +4,7 @@ import OtpInput from "../../components/OtpInput";
 import SuccessAnimation from "../../components/SuccessAnimation";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../store/slices/authSlice";
+import { API_BASE_URL } from "../../config/apiBase";
 
 const RegisterWithOTP = () => {
   const dispatch = useDispatch();
@@ -29,7 +30,7 @@ const RegisterWithOTP = () => {
       setError(null);
 
       await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/otp/send`,
+        `${API_BASE_URL}/otp/send`,
         { email: form.email, name: form.name }
       );
 
@@ -55,7 +56,7 @@ const RegisterWithOTP = () => {
       setError(null);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/otp/verify`,
+        `${API_BASE_URL}/otp/verify`,
         { ...form, otp }
       );
 

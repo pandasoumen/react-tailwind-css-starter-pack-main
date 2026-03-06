@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../store/slices/authSlice";
+import { API_BASE_URL } from "../../config/apiBase";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -31,7 +32,7 @@ const Login = () => {
       setError(null);
 
       const res = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/auth/login`,
+        `${API_BASE_URL}/auth/login`,
         {
           email: form.email,
           password: form.password,

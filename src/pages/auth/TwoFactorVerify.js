@@ -3,6 +3,7 @@ import axios from "axios";
 import OtpInput from "../../components/OtpInput";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../../store/slices/authSlice";
+import { API_BASE_URL } from "../../config/apiBase";
 
 const TwoFactorVerify = ({ email }) => {
   const dispatch = useDispatch();
@@ -15,7 +16,7 @@ const TwoFactorVerify = ({ email }) => {
       setLoading(true);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/otp/verify`,
+        `${API_BASE_URL}/otp/verify`,
         { email, otp }
       );
 
